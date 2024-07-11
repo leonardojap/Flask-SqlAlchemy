@@ -30,6 +30,25 @@ Using Flask to build a Restful API Server
 
 ```bash
 docker-compose down && docker-compose up --build -d && docker image prune -af
- 
-    
+```
 
+# Services:
+
+```bash
+ List all 'saludos'
+ GET http://localhost:8080/saludo
+
+ Create a new 'saludo':
+ POST http://localhost:8080/saludo
+ body:
+  {
+    "mensaje": "hi from flask!"
+  }
+
+ Find 'saludo' by id
+ GET http://localhost:8080/saludo/1
+
+ Filter 'saludo' by content:
+ GET http://localhost:8080/saludo/filter/contenmessaje
+
+```
