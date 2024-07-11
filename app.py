@@ -1,22 +1,40 @@
 from flask import Flask
-from extensions import db, migrate
+from extensions import db
+import os
+from dotenv import load_dotenv
+from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy.engine.url import make_url
 
-#para manejar las rutas de los controladores
+# Para manejar las rutas de los controladores
 from controllers import all_blueprints
 
-app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
+    load_dotenv()
 
-#activa el contexto para pa base de datos
-app.app_context().push()
+    # Configuración de la base de datos
+    DATABASE_URI = os.getenv('DATABASE_URL', 'fallback_default_database_uri')
+    print(DATABASE_URI)
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
 
-#configuracion de la base de datos
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/saludos'
-db.init_app(app)
+    # Inicialización de la base de datos con la aplicación
+    db.init_app(app)
 
-#configuracion de la migracion, para crear la base de datos, tabals, etc
-migrate.init_app(app, db)
+    with app.app_context():
+        # Intenta crear la base de datos si no existe
+        if not database_exists(DATABASE_URI):
+            create_database(DATABASE_URI)
+        
+        # Crear las tablas si no existen
+        db.create_all()
 
-#registra los controladores dinamicamente
+    return app
+
+app = create_app()
+
+# Registra los controladores dinámicamente
 for blueprint in all_blueprints:
     app.register_blueprint(blueprint)
 
+if __name__ == '__main__':
+    app.run(debug=True)
